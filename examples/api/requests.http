@@ -1,0 +1,41 @@
+# Create a requests.http file with sample requests for testing the CRUD API
+
+requests_content = """
+### Create a new person
+POST http://localhost:9000/people
+Content-Type: application/json
+
+{
+  "name": "Rodrigo Rangel",
+  "age": 38,
+  "student": false
+}
+
+### Get all people
+GET http://localhost:9000/people
+Accept: application/json
+
+### Get a specific person by ID
+GET http://localhost:9000/people/1
+Accept: application/json
+
+### Update a person
+PUT http://localhost:9000/people/1
+Content-Type: application/json
+
+{
+  "name": "John Smith",
+  "age": 31,
+  "student": true
+}
+
+### Delete a person
+DELETE http://localhost:9000/people/1
+Accept: application/json
+
+# Save the content to a requests.http file
+file_path = "/mnt/data/requests.http"
+with open(file_path, "w") as file:
+    file.write(requests_content)
+
+file_path
