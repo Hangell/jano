@@ -1,5 +1,5 @@
 
-# hangell/jano
+# Hangell/jano
 [![godoc](https://godoc.org/github.com/hangell/jano?status.svg)](https://godoc.org/github.com/hangell/jano)
 [![sourcegraph](https://sourcegraph.com/github.com/hangell/jano/-/badge.svg)](https://sourcegraph.com/github.com/hangell/jano?badge)
 
@@ -8,7 +8,7 @@ Jano is a Go library that allows you to create HTTP servers with routing similar
 ## Installation
 
 ```sh
-go get github.com/hangell/jano
+go get github.com/Hangell/jano
 ```
 
 ## Usage Example
@@ -20,7 +20,7 @@ import (
     "log"
     "net/http"
     "os"
-    "github.com/hangell/jano"
+    "github.com/Hangell/jano"
 )
 
 func main() {
