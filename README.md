@@ -335,13 +335,17 @@ The following are the results from running the benchmarks:
 | BenchmarkJanoAlternativeInRegexp-8 | 752,006          | 1,478                      | 1,600                   | 16                                    |
 | BenchmarkManyPathVariables-8     | 538,432          | 2,160                      | 1,566                   | 25                                    |
 
+##Curiosities
+
+The name "Jano" is inspired by Janus, the Roman god of changes and transitions. Janus is often depicted with two faces looking in opposite directions, symbolizing endings and beginnings, the past and the future. This symbolism aligns with the Jano library's goal of facilitating smooth transitions and handling changes in HTTP routing efficiently.
+
 ## License
 
 This project is licensed under the BSD-3-Clause License - see the LICENSE file for details.
 
 ## Donations
 If you enjoyed using this project, please consider making a donation to support the continuous development of the project. You can make a donation using one of the following options:
-* Pix: rodrigo@hangell.org
+
 * Cryptocurrencies or NFT MetaMask: 0xEd4d1be72F807Faa358C966a8eF63367c200130F
 
 ![Created By](https://media.licdn.com/dms/image/D4D03AQF0vBM0rLZMKg/profile-displayphoto-shrink_200_200/0/1704050191664?e=1726099200&v=beta&t=JiPipqyppQaj1f6tR6tI2cMojmCAgJFQXkJgZdAZKqk)
@@ -349,7 +353,6 @@ If you enjoyed using this project, please consider making a donation to support 
 <div>
   <a href="https://hangell.org" target="_blank"><img src="https://img.shields.io/badge/website-000000?style=for-the-badge&logo=About.me&logoColor=white" target="_blank"></a>
   <a href="https://play.google.com/store/apps/dev?id=5606456325281613718" target="_blank"><img src="https://img.shields.io/badge/Google_Play-414141?style=for-the-badge&logo=google-play&logoColor=white" target="_blank"></a>
-  <a href="https://www.youtube.com/channel/UC8_zG7RFM2aMhI-p-6zmixw" target="_blank"><img src="https://img.shields.io/badge/YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white" target="_blank"></a>
   <a href="https://www.facebook.com/hangell.org" target="_blank"><img src="https://img.shields.io/badge/Facebook-1877F2?style=for-the-badge&logo=facebook&logoColor=white" target="_blank"></a>
   <a href="https://www.linkedin.com/in/rodrigo-rangel-a80810170" target="_blank"><img src="https://img.shields.io/badge/-LinkedIn-%230077B5?style=for-the-badge&logo=linkedin&logoColor=white" target="_blank"></a>
 </div>
