@@ -1,7 +1,5 @@
 
-# Hangell/jano
-[![godoc](https://godoc.org/github.com/hangell/jano?status.svg)](https://godoc.org/github.com/hangell/jano)
-[![sourcegraph](https://sourcegraph.com/github.com/hangell/jano/-/badge.svg)](https://sourcegraph.com/github.com/hangell/jano?badge)
+# Hangell/jano [![Go Report Card](https://goreportcard.com/badge/github.com/Hangell/jano)] [![GitHub tag](https://img.shields.io/github/v/tag/Hangell/jano?label=version&color=orange)] [![Contributing](https://img.shields.io/badge/contributions-welcome-brightgreen)](CONTRIBUTING.md) [![License](https://img.shields.io/github/license/Hangell/gommit)](LICENSE) [![Go Reference](https://pkg.go.dev/badge/github.com/Hangell/jano.svg)](https://pkg.go.dev/github.com/Hangell/jano)
 
 Jano is a Go library that allows you to create HTTP servers with routing similar to Express.js.
 
