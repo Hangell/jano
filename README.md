@@ -1,5 +1,5 @@
 
-# Hangell/jano [![Go Report Card](https://goreportcard.com/badge/github.com/Hangell/gommit)](https://goreportcard.com/report/github.com/Hangell/gommit) [![GitHub tag](https://img.shields.io/github/v/tag/Hangell/gommit?label=version&color=orange)](https://github.com/Hangell/gommit/tags) [![Contributing](https://img.shields.io/badge/contributions-welcome-brightgreen)](CONTRIBUTING.md) [![License](https://img.shields.io/github/license/Hangell/gommit)](LICENSE) [![Go Reference](https://pkg.go.dev/badge/github.com/Hangell/jano.svg)](https://pkg.go.dev/github.com/Hangell/jano)
+# Hangell/jano [![Go Report Card](https://goreportcard.com/badge/github.com/Hangell/jano)](https://goreportcard.com/report/github.com/Hangell/jano) [![GitHub tag](https://img.shields.io/github/v/tag/Hangell/jano?label=version&color=orange)](https://github.com/Hangell/jano/tags) [![Contributing](https://img.shields.io/badge/contributions-welcome-brightgreen)](CONTRIBUTING.md) [![License](https://img.shields.io/github/license/Hangell/jano)](LICENSE) [![Go Reference](https://pkg.go.dev/badge/github.com/Hangell/jano.svg)](https://pkg.go.dev/github.com/Hangell/jano)
 
 Jano is a Go library that allows you to create HTTP servers with routing similar to Express.js.
 
