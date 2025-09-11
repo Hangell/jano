@@ -348,7 +348,9 @@ If you enjoyed using this project, please consider making a donation to support 
 
 * Cryptocurrencies or NFT MetaMask: 0xEd4d1be72F807Faa358C966a8eF63367c200130F
 
-![Created By](https://media.licdn.com/dms/image/D4D03AQF0vBM0rLZMKg/profile-displayphoto-shrink_200_200/0/1704050191664?e=1726099200&v=beta&t=JiPipqyppQaj1f6tR6tI2cMojmCAgJFQXkJgZdAZKqk)
+<img src="https://avatars.githubusercontent.com/u/53544561?v=4" width="150" style="border-radius: 50%;" />
+
+**Rodrigo Rangel**
 
 <div>
   <a href="https://hangell.org" target="_blank"><img src="https://img.shields.io/badge/website-000000?style=for-the-badge&logo=About.me&logoColor=white" target="_blank"></a>
