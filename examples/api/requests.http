@@ -1,6 +1,3 @@
-# Create a requests.http file with sample requests for testing the CRUD API
-
-requests_content = """
 ### Create a new person
 POST http://localhost:9000/people
 Content-Type: application/json
@@ -32,10 +29,3 @@ Content-Type: application/json
 ### Delete a person
 DELETE http://localhost:9000/people/1
 Accept: application/json
-
-# Save the content to a requests.http file
-file_path = "/mnt/data/requests.http"
-with open(file_path, "w") as file:
-    file.write(requests_content)
-
-file_path

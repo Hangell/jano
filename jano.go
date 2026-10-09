@@ -6,14 +6,15 @@ import (
 	"strings"
 )
 
-// Jano struct to hold the routes and middlewares
+// Jano holds routes, middleware and a fallback handler.
+// Configure it before serving requests; concurrent configuration is unsupported.
 type Jano struct {
-	routes       map[string]map[string]http.HandlerFunc
-	middlewares  []func(http.Handler) http.Handler
-	notFound     http.HandlerFunc
+	routes      map[string]map[string]http.HandlerFunc
+	middlewares []func(http.Handler) http.Handler
+	notFound    http.HandlerFunc
 }
 
-// New creates a new instance of Jano
+// New creates a new instance of Jano.
 func New() *Jano {
 	return &Jano{
 		routes:      make(map[string]map[string]http.HandlerFunc),
@@ -22,42 +23,43 @@ func New() *Jano {
 	}
 }
 
-// Get registers a GET handler
+// Get registers a GET handler.
 func (j *Jano) Get(path string, handler http.HandlerFunc) {
 	j.addRoute("GET", path, handler)
 }
 
-// Post registers a POST handler
+// Post registers a POST handler.
 func (j *Jano) Post(path string, handler http.HandlerFunc) {
 	j.addRoute("POST", path, handler)
 }
 
-// Put registers a PUT handler
+// Put registers a PUT handler.
 func (j *Jano) Put(path string, handler http.HandlerFunc) {
 	j.addRoute("PUT", path, handler)
 }
 
-// Delete registers a DELETE handler
+// Delete registers a DELETE handler.
 func (j *Jano) Delete(path string, handler http.HandlerFunc) {
 	j.addRoute("DELETE", path, handler)
 }
 
-// Patch registers a PATCH handler
+// Patch registers a PATCH handler.
 func (j *Jano) Patch(path string, handler http.HandlerFunc) {
 	j.addRoute("PATCH", path, handler)
 }
 
-// Options registers an OPTIONS handler
+// Options registers an OPTIONS handler.
 func (j *Jano) Options(path string, handler http.HandlerFunc) {
 	j.addRoute("OPTIONS", path, handler)
 }
 
-// Head registers a HEAD handler
+// Head registers a HEAD handler.
 func (j *Jano) Head(path string, handler http.HandlerFunc) {
 	j.addRoute("HEAD", path, handler)
 }
 
-// Use adds a middleware to the chain
+// Use adds middleware in registration order. Middleware runs only on matched
+// routes; the first registered middleware is the outermost wrapper.
 func (j *Jano) Use(middleware func(http.Handler) http.Handler) {
 	j.middlewares = append(j.middlewares, middleware)
 }
@@ -70,7 +72,7 @@ func (j *Jano) addRoute(method, path string, handler http.HandlerFunc) {
 	j.routes[path][method] = handler
 }
 
-// Router returns the http.Handler to be used by http.Server
+// Router returns the http.Handler to be used by http.Server.
 func (j *Jano) Router() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		handler, params, ok := j.findHandler(r.Method, r.URL.Path)
@@ -99,7 +101,8 @@ func (j *Jano) findHandler(method, path string) (http.HandlerFunc, map[string]st
 	return nil, nil, false
 }
 
-// NotFound sets the custom 404 handler
+// NotFound sets the fallback for unmatched paths and methods.
+// The handler is responsible for writing its HTTP status; middleware is bypassed.
 func (j *Jano) NotFound(handler http.HandlerFunc) {
 	j.notFound = handler
 }
@@ -114,7 +117,7 @@ func matchRoute(route, path string) (map[string]string, bool) {
 	params := make(map[string]string)
 	for i := range routeParts {
 		if strings.HasPrefix(routeParts[i], "{") && strings.HasSuffix(routeParts[i], "}") {
-			paramName := routeParts[i][1:len(routeParts[i])-1]
+			paramName := routeParts[i][1 : len(routeParts[i])-1]
 			params[paramName] = pathParts[i]
 		} else if routeParts[i] != pathParts[i] {
 			return nil, false

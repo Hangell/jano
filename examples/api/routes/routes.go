@@ -1,10 +1,11 @@
 package routes
 
 import (
-	"github.com/hangell/jano"
-	"github.com/hangell/jano/examples/api/handlers"
 	"log"
 	"net/http"
+
+	"github.com/Hangell/jano"
+	"github.com/Hangell/jano/examples/api/handlers"
 )
 
 func SetupRoutes(app *jano.Jano) {
@@ -17,7 +18,7 @@ func SetupRoutes(app *jano.Jano) {
 	app.Delete("/people/{id}", handlers.DeletePerson)
 
 	app.NotFound(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Custom 404: Page not found"))
+		http.Error(w, "Custom 404: Page not found", http.StatusNotFound)
 	})
 }
 

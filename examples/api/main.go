@@ -1,11 +1,12 @@
 package main
 
 import (
-	"github.com/hangell/jano"
-	"github.com/hangell/jano/examples/api/routes"
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/Hangell/jano"
+	"github.com/Hangell/jano/examples/api/routes"
 )
 
 func main() {

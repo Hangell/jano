@@ -1,0 +1,34 @@
+name: Bug report
+description: Report a reproducible problem with Jano.
+title: "[Bug]: "
+body:
+  - type: markdown
+    attributes:
+      value: "For security vulnerabilities, follow SECURITY.md. English and Portuguese are welcome."
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: "Include go version, OS/architecture and Jano version or commit."
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: "Include code and the request or command that triggers the problem. Remove secrets."
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: "Include status codes or relevant error output."
+    validations:
+      required: true

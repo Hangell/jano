@@ -6,53 +6,40 @@ import (
 	"testing"
 )
 
-func BenchmarkJano(b *testing.B) {
+func benchmarkRoute(b *testing.B, route, path string) {
 	app := New()
-	handler := func(w http.ResponseWriter, r *http.Request) {}
-	app.Get("/v1/{v1}", handler)
-
-	request, _ := http.NewRequest("GET", "/v1/anything", nil)
-	for i := 0; i < b.N; i++ {
-		app.Router().ServeHTTP(nil, request)
-	}
-}
-
-func BenchmarkJanoSimple(b *testing.B) {
-	app := New()
-	handler := func(w http.ResponseWriter, r *http.Request) {}
-	app.Get("/status", handler)
-
-	request, _ := http.NewRequest("GET", "/status", nil)
+	app.Get(route, func(w http.ResponseWriter, r *http.Request) {})
+	router := app.Router()
+	request := httptest.NewRequest(http.MethodGet, path, nil)
+	response := httptest.NewRecorder()
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		app.Router().ServeHTTP(nil, request)
+		router.ServeHTTP(response, request)
 	}
 }
 
-func BenchmarkJanoAlternativeInRegexp(b *testing.B) {
-	app := New()
-	handler := func(w http.ResponseWriter, r *http.Request) {}
-	app.Get("/v1/{v1:(?:a|b)}", handler)
+func BenchmarkJano(b *testing.B) {
+	benchmarkRoute(b, "/v1/{v1}", "/v1/anything")
+}
 
-	requestA, _ := http.NewRequest("GET", "/v1/a", nil)
-	requestB, _ := http.NewRequest("GET", "/v1/b", nil)
-	for i := 0; i < b.N; i++ {
-		app.Router().ServeHTTP(nil, requestA)
-		app.Router().ServeHTTP(nil, requestB)
-	}
+func BenchmarkJanoSimple(b *testing.B) {
+	benchmarkRoute(b, "/status", "/status")
 }
 
 func BenchmarkManyPathVariables(b *testing.B) {
-	app := New()
-	handler := func(w http.ResponseWriter, r *http.Request) {}
-	app.Get("/v1/{v1}/{v2}/{v3}/{v4}/{v5}", handler)
+	benchmarkRoute(b, "/v1/{v1}/{v2}/{v3}/{v4}/{v5}", "/v1/1/2/3/4/5")
+}
 
-	matchingRequest, _ := http.NewRequest("GET", "/v1/1/2/3/4/5", nil)
-	notMatchingRequest, _ := http.NewRequest("GET", "/v1/1/2/3/4", nil)
-	recorder := httptest.NewRecorder()
+func BenchmarkJanoNotFound(b *testing.B) {
+	app := New()
+	app.Get("/status", func(w http.ResponseWriter, r *http.Request) {})
+	router := app.Router()
+	request := httptest.NewRequest(http.MethodGet, "/missing", nil)
+	b.ReportAllocs()
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		app.Router().ServeHTTP(nil, matchingRequest)
-		app.Router().ServeHTTP(recorder, notMatchingRequest)
+		// A fresh recorder avoids accumulating error bodies across iterations.
+		router.ServeHTTP(httptest.NewRecorder(), request)
 	}
 }

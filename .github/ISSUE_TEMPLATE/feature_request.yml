@@ -1,0 +1,23 @@
+name: Feature request
+description: Propose an improvement to Jano.
+title: "[Feature]: "
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or use case
+      description: "What are you trying to accomplish? English and Portuguese are welcome."
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: "Describe the API or behavior you would like."
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives and compatibility
+      description: "Describe workarounds and potential effects on existing users."

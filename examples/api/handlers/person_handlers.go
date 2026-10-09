@@ -15,7 +15,7 @@ type Person struct {
 }
 
 var (
-	people   = make(map[int]Person)
+	people    = make(map[int]Person)
 	idCounter = 1
 	mutex     = &sync.Mutex{}
 )
