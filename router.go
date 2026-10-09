@@ -7,14 +7,14 @@ import (
 	"reflect"
 	"sort"
 	"strings"
+
+	"github.com/Hangell/jano/internal/routepattern"
 )
 
 type routeKey struct{ method, path string }
 type patternKey struct{ method, signature string }
-type segment struct {
-	value               string
-	parameter, catchAll bool
-}
+type segment = routepattern.Segment
+
 type route struct {
 	key            routeKey
 	segments       []segment
@@ -48,7 +48,7 @@ type routerState struct {
 }
 
 func (j *Jano) register(method, path string, handler http.Handler, contextual HandlerFunc, middleware []Middleware) error {
-	if !validMethod(method) {
+	if !routepattern.ValidMethod(method) {
 		return fmt.Errorf("jano: invalid HTTP method %q", method)
 	}
 	if isNilHandler(handler) && contextual == nil {
@@ -88,56 +88,8 @@ func isNilHandler(handler http.Handler) bool {
 	return false
 }
 
-func validMethod(method string) bool {
-	if method == "" {
-		return false
-	}
-	for _, c := range method {
-		if c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9' || strings.ContainsRune("!#$%&'*+-.^_`|~", c) {
-			continue
-		}
-		return false
-	}
-	return true
-}
-
 func parsePattern(path string) ([]segment, string, error) {
-	if !strings.HasPrefix(path, "/") || strings.ContainsAny(path, "?#\r\n") {
-		return nil, "", fmt.Errorf("jano: invalid route path %q", path)
-	}
-	parts := strings.Split(path, "/")
-	segments := make([]segment, len(parts))
-	var signature strings.Builder
-	names := make(map[string]bool)
-	for i, part := range parts {
-		s := segment{value: part}
-		if strings.HasPrefix(part, "{") && strings.HasSuffix(part, "}") {
-			s.value = part[1 : len(part)-1]
-			s.parameter = true
-			if strings.HasSuffix(s.value, "...") {
-				s.catchAll = true
-				s.value = strings.TrimSuffix(s.value, "...")
-				if i != len(parts)-1 {
-					return nil, "", fmt.Errorf("jano: catch-all must be the final segment in %q", path)
-				}
-			}
-			if s.value == "" || strings.ContainsAny(s.value, "{}") || names[s.value] {
-				return nil, "", fmt.Errorf("jano: invalid or repeated parameter %q in %q", s.value, path)
-			}
-			names[s.value] = true
-		} else if strings.ContainsAny(part, "{}") {
-			return nil, "", fmt.Errorf("jano: parameters must occupy an entire segment in %q", path)
-		}
-		segments[i] = s
-		if s.catchAll {
-			signature.WriteString("C;")
-		} else if s.parameter {
-			signature.WriteString("P;")
-		} else {
-			fmt.Fprintf(&signature, "S%d:%s;", len(part), part)
-		}
-	}
-	return segments, signature.String(), nil
+	return routepattern.Parse(path)
 }
 
 func compileRouter(routes []route, global []Middleware, fallback http.Handler, errorHandler ErrorHandler, methodNotAllowed bool) *routerState {
@@ -168,14 +120,14 @@ func compileRouter(routes []route, global []Middleware, fallback http.Handler, e
 		}
 		node := tree.root
 		for i, s := range route.segments {
-			if s.parameter {
-				entry.params = append(entry.params, parameter{s.value, i, s.catchAll})
+			if s.Parameter {
+				entry.params = append(entry.params, parameter{s.Value, i, s.CatchAll})
 			}
-			if s.catchAll {
+			if s.CatchAll {
 				node.catchAll = entry
 				break
 			}
-			if s.parameter {
+			if s.Parameter {
 				if node.parameter == nil {
 					node.parameter = &routeNode{}
 				}
@@ -184,10 +136,10 @@ func compileRouter(routes []route, global []Middleware, fallback http.Handler, e
 				if node.static == nil {
 					node.static = make(map[string]*routeNode)
 				}
-				if node.static[s.value] == nil {
-					node.static[s.value] = &routeNode{}
+				if node.static[s.Value] == nil {
+					node.static[s.Value] = &routeNode{}
 				}
-				node = node.static[s.value]
+				node = node.static[s.Value]
 			}
 			if i == len(route.segments)-1 {
 				node.entry = entry

@@ -199,11 +199,11 @@ func FuzzMatchRoute(f *testing.F) {
 		state := compileRouter([]route{{key: routeKey{"GET", pattern}, segments: segments, handler: http.HandlerFunc(func(http.ResponseWriter, *http.Request) {})}}, nil, http.HandlerFunc(http.NotFound), DefaultErrorHandler, false)
 		entry, parts := state.find("GET", path)
 		pathParts := strings.Split(path, "/")
-		catchAll := segments[len(segments)-1].catchAll
+		catchAll := segments[len(segments)-1].CatchAll
 		expected := len(pathParts) == len(segments) || (catchAll && len(pathParts) >= len(segments))
 		if expected {
 			for i, segment := range segments {
-				if !segment.parameter && segment.value != pathParts[i] {
+				if !segment.Parameter && segment.Value != pathParts[i] {
 					expected = false
 					break
 				}
@@ -224,10 +224,10 @@ func FuzzMatchRoute(f *testing.F) {
 		r := withParams(httptest.NewRequest("GET", "/", nil), entry.params, parts)
 		var reconstructed []string
 		for _, segment := range segments {
-			if segment.parameter {
-				reconstructed = append(reconstructed, Param(r, segment.value))
+			if segment.Parameter {
+				reconstructed = append(reconstructed, Param(r, segment.Value))
 			} else {
-				reconstructed = append(reconstructed, segment.value)
+				reconstructed = append(reconstructed, segment.Value)
 			}
 		}
 		if strings.Join(reconstructed, "/") != path {

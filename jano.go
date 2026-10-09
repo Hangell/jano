@@ -9,15 +9,6 @@ import (
 // Middleware wraps an HTTP handler. The first middleware is the outermost.
 type Middleware = func(http.Handler) http.Handler
 
-// Option configures a new Jano instance.
-type Option func(*Jano)
-
-// WithMethodNotAllowed enables HTTP 405 responses with an Allow header.
-// By default, unregistered methods use the not-found handler for compatibility.
-func WithMethodNotAllowed() Option {
-	return func(j *Jano) { j.methodNotAllowed = true }
-}
-
 // Jano is an HTTP router. Configuration changes are synchronized and published
 // as immutable routing snapshots. A request in progress may use the previous
 // snapshot. Handlers and middleware must synchronize their own shared state.

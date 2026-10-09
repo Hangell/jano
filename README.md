@@ -194,6 +194,30 @@ curl -X POST http://localhost:9000/people \
 curl http://localhost:9000/people/1
 ```
 
+## Project layout
+
+```text
+jano/
+├── .github/workflows/ci.yml
+├── go.mod
+├── jano.go                 # Public router
+├── jano_test.go
+├── options.go              # Functional options
+├── errors.go
+├── context.go
+├── group.go
+├── router.go               # Routing implementation
+├── internal/
+│   └── routepattern/       # Private route validation
+├── middleware/             # Public optional middleware
+├── examples/               # CRUD and repository integration
+└── docs/                   # Architecture, benchmarks and review
+```
+
+The public package remains importable as `github.com/Hangell/jano`. See the
+[layout rationale](docs/architecture.md#module-layout) and the
+[official Go guide](https://go.dev/doc/modules/layout).
+
 ## Development
 
 ```sh

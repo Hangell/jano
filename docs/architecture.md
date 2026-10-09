@@ -17,8 +17,10 @@ flowchart LR
 
 | File/package | Responsibility |
 | --- | --- |
-| `jano.go` | Public router API, options, synchronization and snapshot publication. |
-| `router.go` | Pattern validation, exact-path index, segment trie, parameter extraction and 405 lookup. |
+| `jano.go` | Public router API, synchronization and snapshot publication. |
+| `options.go` | Functional options for public configuration. |
+| `router.go` | Exact-path index, segment trie, parameter extraction and 405 lookup. |
+| `internal/routepattern` | Private pattern validation and structural metadata. |
 | `group.go` | Prefix composition and middleware inheritance. |
 | `context.go` | HTTP adaptation, JSON binding/rendering and response commitment tracking. |
 | `errors.go` | Public HTTP errors and replaceable error policy. |
@@ -168,3 +170,17 @@ returning from main at that point would interrupt it. The example allows five
 seconds for shutdown and forcibly closes remaining connections if the deadline
 expires. Application code owns shutdown of database pools and hijacked connections.
 See the [Go shutdown contract](https://pkg.go.dev/net/http#Server.Shutdown).
+
+## Module layout
+
+The public Jano package stays at the module root. Its primary file is `jano.go`,
+with options, errors, context and groups in focused files in the same package.
+Optional reusable middleware is a public subpackage. Pattern validation lives in
+`internal/routepattern`, preventing unrelated modules from importing that supporting
+API. Persistence adapters remain in examples because database ownership belongs
+to the application.
+
+This follows the [Go module organization guide](https://go.dev/doc/modules/layout),
+which recommends root packages and internal supporting packages when appropriate.
+File names are examples, not fixed requirements; a library has no executable
+entry point, and `client.go` is not required for an HTTP router.

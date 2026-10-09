@@ -18,6 +18,9 @@ and the example shutdown follows the [Go server lifecycle contract](https://pkg.
 
 ## Validation
 
+The coverage and fuzz measurements below describe expansion commit `705cad9`,
+before the subsequent file-layout adjustment.
+
 - `make check`: formatting, vet, race-enabled tests and build passed on Go 1.27.1.
 - `GOTOOLCHAIN=go1.22.5 make check`: the same checks passed on the minimum version.
 - Root-package statement coverage: 99.4%, measured with `go test -coverprofile=coverage.out .`.
@@ -50,3 +53,12 @@ at registration. Context deadlines require cooperating downstream operations.
 Optional legacy writer interfaces such as Flusher are not all exposed by the
 wrappers; use ResponseController or an integration-specific adapter. Application
 code owns database pools and hijacked connections.
+
+## Layout follow-up
+
+The public functional options were moved to `options.go`, and route-pattern
+validation and metadata to `internal/routepattern`. The root API and matching
+algorithm are unchanged. Existing routing, validation, concurrency and HTTP
+lifecycle tests passed with `make check` on Go 1.27.1 and with
+`GOTOOLCHAIN=go1.22.5 make check`. The README and architecture document describe
+the layout and link to the official Go module organization guide.
