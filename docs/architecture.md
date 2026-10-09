@@ -23,6 +23,7 @@ flowchart LR
 | `internal/routepattern` | Private pattern validation and structural metadata. |
 | `group.go` | Prefix composition and middleware inheritance. |
 | `context.go` | HTTP adaptation, JSON binding/rendering and response commitment tracking. |
+| `params.go` | Native PathValue access and checked decimal conversion. |
 | `errors.go` | Public HTTP errors and replaceable error policy. |
 | `middleware` | Optional HTTP concerns, independent of persistence and domain models. |
 | `examples/service` | Constructor injection and memory/SQL repository adapters. |
@@ -57,6 +58,13 @@ static paths. Parameterized routes clone the request to prevent mutation of the
 original request's path values. Parameters are visible before middleware runs.
 Legacy string context keys are retained; prefer `jano.Param` or `r.PathValue` for
 new code. For application context values, use private typed keys to avoid collisions.
+
+`ParamInt` and `ParamInt64` build on PathValue, including values supplied by native
+http.ServeMux. They reject missing values, malformed decimals and numeric overflow
+without writing a response; returned HTTPError causes retain strconv errors for
+errors.Is/As while the client message omits the raw input. Domain checks such as
+positive IDs stay in the application. The numeric helpers add no route constraints
+and do not change either router's URL decoding or method behavior.
 
 Context handlers have the signature `func(*jano.Context) error`. Pass
 `c.Context()` to downstream calls. Context helpers do not validate business rules.
@@ -114,7 +122,7 @@ type UserRepository interface {
 
 func userHandler(repository UserRepository) jano.HandlerFunc {
     return func(c *jano.Context) error {
-        id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+        id, err := c.ParamInt64("id")
         if err != nil || id <= 0 {
             return jano.NewHTTPError(http.StatusBadRequest, "Invalid user ID")
         }

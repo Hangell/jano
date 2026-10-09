@@ -31,6 +31,13 @@ func (c *Context) Context() context.Context { return c.Request.Context() }
 // Param returns a path parameter.
 func (c *Context) Param(name string) string { return Param(c.Request, name) }
 
+// ParamInt parses an int path parameter; invalid values return an HTTP 400 error.
+func (c *Context) ParamInt(name string) (int, error) { return ParamInt(c.Request, name) }
+
+// ParamInt64 parses an int64 path parameter, preserving errors for the error policy.
+// Positive-only identifiers require a separate domain check.
+func (c *Context) ParamInt64(name string) (int64, error) { return ParamInt64(c.Request, name) }
+
 // Query returns the first query parameter value.
 func (c *Context) Query(name string) string { return c.Request.URL.Query().Get(name) }
 

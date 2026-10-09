@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"strconv"
 	"syscall"
 	"time"
 
@@ -39,7 +38,7 @@ func NewApplication(repository UserRepository) *jano.Jano {
 	app.Use(middleware.ContextTimeout(2 * time.Second))
 	api := app.Group("/api").Group("/v1")
 	api.HandleContext(http.MethodGet, "/users/{id}", func(c *jano.Context) error {
-		id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+		id, err := c.ParamInt64("id")
 		if err != nil || id <= 0 {
 			return jano.NewHTTPError(http.StatusBadRequest, "Invalid user ID")
 		}

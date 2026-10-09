@@ -56,6 +56,8 @@ func TestRepositoryErrors(t *testing.T) {
 		{"internal", "/api/v1/users/42", errors.New("private database password"), 500},
 		{"invalid ID", "/api/v1/users/nope", nil, 400},
 		{"negative ID", "/api/v1/users/-1", nil, 400},
+		{"zero ID", "/api/v1/users/0", nil, 400},
+		{"overflow ID", "/api/v1/users/9223372036854775808", nil, 400},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			app := NewApplication(repositoryFunc(func(context.Context, int64) (User, error) {

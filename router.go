@@ -192,10 +192,6 @@ func (state *routerState) allowedMethods(path string) string {
 	return strings.Join(methods, ", ")
 }
 
-// Param returns a route parameter from a Jano request. It works in standard
-// handlers and middleware using Go's Request.PathValue API.
-func Param(r *http.Request, name string) string { return r.PathValue(name) }
-
 // parameterContext preserves legacy string-key lookups without allocating a
 // nested context node for every parameter. The values are request-local.
 type parameterContext struct {

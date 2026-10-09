@@ -3,8 +3,9 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
-	"strconv"
 	"sync"
+
+	"github.com/Hangell/jano"
 )
 
 type Person struct {
@@ -46,9 +47,8 @@ func CreatePerson(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetPerson(w http.ResponseWriter, r *http.Request) {
-	idStr := r.Context().Value("id").(string)
-	id, err := strconv.Atoi(idStr)
-	if err != nil {
+	id, err := jano.ParamInt(r, "id")
+	if err != nil || id <= 0 {
 		http.Error(w, "Invalid person ID", http.StatusBadRequest)
 		return
 	}
@@ -63,9 +63,8 @@ func GetPerson(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdatePerson(w http.ResponseWriter, r *http.Request) {
-	idStr := r.Context().Value("id").(string)
-	id, err := strconv.Atoi(idStr)
-	if err != nil {
+	id, err := jano.ParamInt(r, "id")
+	if err != nil || id <= 0 {
 		http.Error(w, "Invalid person ID", http.StatusBadRequest)
 		return
 	}
@@ -87,9 +86,8 @@ func UpdatePerson(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeletePerson(w http.ResponseWriter, r *http.Request) {
-	idStr := r.Context().Value("id").(string)
-	id, err := strconv.Atoi(idStr)
-	if err != nil {
+	id, err := jano.ParamInt(r, "id")
+	if err != nil || id <= 0 {
 		http.Error(w, "Invalid person ID", http.StatusBadRequest)
 		return
 	}

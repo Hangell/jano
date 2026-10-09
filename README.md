@@ -44,7 +44,7 @@ func main() {
         fmt.Fprintln(w, "Welcome to Jano!")
     })
     app.Get("/people/{id}", func(w http.ResponseWriter, r *http.Request) {
-        id, _ := r.Context().Value("id").(string)
+        id := r.PathValue("id")
         fmt.Fprintf(w, "Person: %s\n", id)
     })
     app.NotFound(func(w http.ResponseWriter, r *http.Request) {
@@ -96,8 +96,9 @@ Response helpers return errors and prevent writing a second response.
 | `NotFound(http.HandlerFunc)` | Replace the fallback; set its HTTP status explicitly. |
 | `SetErrorHandler(ErrorHandler)` | Customize the error policy for context handlers. |
 | `Router()` / `ServeHTTP` | Serve Jano directly as an `http.Handler`. |
-| `Param(request, name)` | Read parameters in standard handlers or middleware. |
-| `Context.Param`, `Query`, `Context` | Access path, query and standard request context. |
+| `Param(request, name)` | Read string parameters through `Request.PathValue`. |
+| `ParamInt`, `ParamInt64` | Convert decimal parameters with range checks and HTTP 400 errors. |
+| `Context.Param`, `ParamInt`, `ParamInt64`, `Query`, `Context` | Access string/numeric parameters, query and request context. |
 | `Context.JSON`, `Text`, `NoContent` | Write a response and return write/encoding errors. |
 | `Context.BindJSON`, `BindJSONLimit` | Decode bounded JSON without automatically writing a response. |
 
@@ -134,6 +135,38 @@ Response helpers return errors and prevent writing a second response.
   `http.ResponseController`. Hijacking is tracked; unsupported writers return `http.ErrNotSupported`.
   Optional legacy writer interfaces are not all exposed
   by wrappers; use standard handlers when an integration requires those assertions.
+
+## Numeric IDs and the native Go router
+
+Go 1.22 added method patterns and parameters to `http.ServeMux`; read their values
+with `Request.PathValue`. Values remain strings, so numeric conversion and domain
+validation are still required. See the [official Go routing guide](https://go.dev/blog/routing-enhancements).
+
+Jano's parameter helpers work with both routers:
+
+```go
+mux := http.NewServeMux()
+mux.HandleFunc("GET /users/{id}", func(w http.ResponseWriter, r *http.Request) {
+    id, err := jano.ParamInt64(r, "id")
+    if err != nil || id <= 0 {
+        http.Error(w, "Invalid user ID", http.StatusBadRequest)
+        return
+    }
+    fmt.Fprintf(w, "User: %d", id)
+})
+```
+
+In a context handler, use `c.ParamInt64("id")` or `c.ParamInt("id")` and return
+conversion errors to the error policy. Missing, malformed or overflowing values
+return zero and an `HTTPError` with status 400. Helpers do not write a response.
+`ParamInt` uses the platform's `int` range; `ParamInt64` has a fixed signed 64-bit
+range. Signed numbers, zero and leading zeros are allowed by conversion; check
+positive-only ID rules explicitly. UUIDs and other identifiers remain strings via
+`Param` or `PathValue` and require their own domain validation.
+
+Using the helpers with ServeMux does not give both routers identical semantics.
+ServeMux controls its own HEAD handling, redirects and escaped-segment matching;
+Jano's routing behavior remains as documented above.
 
 ## Optional middleware
 
@@ -205,6 +238,7 @@ jano/
 ├── options.go              # Functional options
 ├── errors.go
 ├── context.go
+├── params.go               # String and numeric path helpers
 ├── group.go
 ├── router.go               # Routing implementation
 ├── internal/

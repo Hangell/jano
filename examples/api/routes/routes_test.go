@@ -71,6 +71,9 @@ func TestPeopleAPI(t *testing.T) {
 
 	for _, method := range []string{"GET", "PUT", "DELETE"} {
 		request(method, "/people/not-a-number", `{}`, 400)
+		request(method, "/people/0", `{}`, 400)
+		request(method, "/people/-1", `{}`, 400)
+		request(method, "/people/9223372036854775808", `{}`, 400)
 	}
 	request("POST", "/people", `{`, 400)
 	request("PUT", path, `{`, 400)

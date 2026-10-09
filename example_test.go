@@ -11,7 +11,7 @@ import (
 func ExampleJano_Router() {
 	app := jano.New()
 	app.Get("/people/{id}", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Person: %s", r.Context().Value("id"))
+		fmt.Fprintf(w, "Person: %s", jano.Param(r, "id"))
 	})
 	response := httptest.NewRecorder()
 	app.Router().ServeHTTP(response, httptest.NewRequest("GET", "/people/42", nil))
