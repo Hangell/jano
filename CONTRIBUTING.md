@@ -11,7 +11,7 @@ Contributions in English or Portuguese are welcome. Follow our
 4. Run `go test ./...` before making changes.
 
 There are no external Go dependencies. Keep the library small and compatible
-with `net/http`; discuss changes to the public API, routing semantics or new
+with `net/http`; follow the [architecture contracts](docs/architecture.md) and discuss changes to the public API, routing semantics or new
 runtime dependencies in an issue before investing in a large implementation.
 Documentation fixes and small bug fixes can go straight to a pull request.
 
@@ -35,7 +35,7 @@ make check
 Without Make, run:
 
 ```sh
-gofmt -w jano.go doc.go jano_test.go example_test.go bench_test.go examples/api
+gofmt -w $(find . -type f -name '*.go' -not -path './.git/*')
 go vet ./...
 go test -race ./...
 go build ./...

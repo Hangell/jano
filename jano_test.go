@@ -187,33 +187,52 @@ func FuzzMatchRoute(f *testing.F) {
 		{"/", "/"}, {"/people/{id}", "/people/42"},
 		{"/people/{id}", "/people/"}, {"/people/{id}", "/users/42"},
 		{"/people/{id}", "/people/42/posts"}, {"/{id:[0-9]+}", "/text"},
+		{"/files/{path...}", "/files/a/b"}, {"/files/{path...}", "/files/"},
 	} {
 		f.Add(seed[0], seed[1])
 	}
-	f.Fuzz(func(t *testing.T, route, path string) {
-		params, ok := matchRoute(route, path)
-		if !ok {
+	f.Fuzz(func(t *testing.T, pattern, path string) {
+		segments, _, err := parsePattern(pattern)
+		if err != nil {
 			return
 		}
-		routeParts, pathParts := strings.Split(route, "/"), strings.Split(path, "/")
-		if len(routeParts) != len(pathParts) {
-			t.Fatal("matched paths with different segment counts")
-		}
-		// Substituting parameters into a matched pattern must reconstruct the path.
-		// Duplicate parameter names store only the last value, so skip those patterns.
-		seen := make(map[string]bool)
-		for i, part := range routeParts {
-			if strings.HasPrefix(part, "{") && strings.HasSuffix(part, "}") {
-				key := part[1 : len(part)-1]
-				if seen[key] {
-					return
+		state := compileRouter([]route{{key: routeKey{"GET", pattern}, segments: segments, handler: http.HandlerFunc(func(http.ResponseWriter, *http.Request) {})}}, nil, http.HandlerFunc(http.NotFound), DefaultErrorHandler, false)
+		entry, parts := state.find("GET", path)
+		pathParts := strings.Split(path, "/")
+		catchAll := segments[len(segments)-1].catchAll
+		expected := len(pathParts) == len(segments) || (catchAll && len(pathParts) >= len(segments))
+		if expected {
+			for i, segment := range segments {
+				if !segment.parameter && segment.value != pathParts[i] {
+					expected = false
+					break
 				}
-				seen[key] = true
-				routeParts[i] = params[key]
 			}
 		}
-		if strings.Join(routeParts, "/") != path {
-			t.Fatal("parameters did not reconstruct the matched path")
+		if (entry != nil) != expected {
+			t.Fatal("compiled lookup disagrees with reference matching")
 		}
+		if entry == nil {
+			return
+		}
+		if len(entry.params) == 0 {
+			if pattern != path {
+				t.Fatal("static route matched a different path")
+			}
+			return
+		}
+		r := withParams(httptest.NewRequest("GET", "/", nil), entry.params, parts)
+		var reconstructed []string
+		for _, segment := range segments {
+			if segment.parameter {
+				reconstructed = append(reconstructed, Param(r, segment.value))
+			} else {
+				reconstructed = append(reconstructed, segment.value)
+			}
+		}
+		if strings.Join(reconstructed, "/") != path {
+			t.Fatal("parameters did not reconstruct path")
+		}
+
 	})
 }

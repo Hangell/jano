@@ -1,6 +1,11 @@
-// Package jano provides HTTP routing with method-specific handlers and middleware.
+// Package jano provides HTTP routing, route groups, middleware and error-returning
+// request handlers without external dependencies.
 //
-// Routes use whole-segment parameters such as /people/{id}. Parameter values are
-// available through the request context using their string names. Configure a
-// Jano instance before serving requests; concurrent configuration is unsupported.
+// Jano implements http.Handler. Routes use whole-segment parameters such as
+// /people/{id} and terminal catch-alls such as /files/{path...}. Parameters are
+// available through Param, Request.PathValue, and legacy string context keys.
+//
+// Configuration changes are synchronized and served through immutable snapshots.
+// Handlers, middleware and injected services remain responsible for their own
+// shared state. Use the request context for database operations and cancellation.
 package jano

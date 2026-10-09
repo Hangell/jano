@@ -4,8 +4,10 @@
 [![Go Reference](https://pkg.go.dev/badge/github.com/Hangell/jano.svg)](https://pkg.go.dev/github.com/Hangell/jano)
 [![License: BSD-3-Clause](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](LICENSE)
 
-Jano is a small Go HTTP routing library with an Express-inspired API, built on
-`net/http` with no external dependencies.
+Jano is a Go HTTP routing library with an Express-inspired API, built on
+`net/http` with no external dependencies. It provides deterministic routing,
+route groups, middleware, JSON helpers and error-returning handlers while keeping
+standard Go HTTP handlers compatible.
 
 ## Installation
 
@@ -52,34 +54,128 @@ func main() {
 }
 ```
 
+## Context handlers and route groups
+
+Use `HandleContext` for request helpers and centralized error handling. Existing
+`Get`, `Post` and other method helpers continue to accept `http.HandlerFunc`.
+
+```go
+app := jano.New(jano.WithMethodNotAllowed())
+api := app.Group("/api").Group("/v1")
+api.HandleContext(http.MethodPost, "/people", func(c *jano.Context) error {
+    var input struct {
+        Name string `json:"name"`
+    }
+    if err := c.BindJSON(&input); err != nil {
+        return err
+    }
+    if input.Name == "" {
+        return jano.NewHTTPError(http.StatusBadRequest, "Name is required")
+    }
+    return c.JSON(http.StatusCreated, input)
+})
+```
+
+`BindJSON` accepts one value, rejects unknown fields and limits the body to 1 MiB.
+Use `BindJSONLimit` to choose another limit. Domain validation remains explicit.
+Unexpected errors produce a generic JSON 500 response; `HTTPError` exposes only
+its client-safe message. Customize logging or error responses with `SetErrorHandler`.
+Response helpers return errors and prevent writing a second response.
+
 ## API
 
-| Method | Purpose |
+| API | Purpose |
 | --- | --- |
-| `New()` | Create a router with a default HTTP 404 handler. |
-| `Get`, `Post`, `Put`, `Delete`, `Patch`, `Options`, `Head` | Register a handler for a method and path. |
-| `Use(func(http.Handler) http.Handler)` | Add middleware in registration order. |
-| `NotFound(http.HandlerFunc)` | Replace the fallback handler. Set its HTTP status explicitly. |
-| `Router() http.Handler` | Obtain a handler for `http.Server` or `httptest`. |
+| `New(options ...Option)` | Create a router; `WithMethodNotAllowed()` opts into 405 responses. |
+| `Get`, `Post`, `Put`, `Delete`, `Patch`, `Options`, `Head` | Register a standard `http.HandlerFunc`. |
+| `Handle(method, path, http.Handler, ...Middleware)` | Register any HTTP handler, including route middleware. |
+| `HandleContext(method, path, HandlerFunc, ...Middleware)` | Register `func(*Context) error`. |
+| `Register`, `RegisterContext` | Return configuration errors instead of panicking. |
+| `Group(prefix, ...Middleware)` | Create nested groups with inherited middleware. |
+| `Use(Middleware)` | Add global middleware in registration order. |
+| `NotFound(http.HandlerFunc)` | Replace the fallback; set its HTTP status explicitly. |
+| `SetErrorHandler(ErrorHandler)` | Customize the error policy for context handlers. |
+| `Router()` / `ServeHTTP` | Serve Jano directly as an `http.Handler`. |
+| `Param(request, name)` | Read parameters in standard handlers or middleware. |
+| `Context.Param`, `Query`, `Context` | Access path, query and standard request context. |
+| `Context.JSON`, `Text`, `NoContent` | Write a response and return write/encoding errors. |
+| `Context.BindJSON`, `BindJSONLimit` | Decode bounded JSON without automatically writing a response. |
 
 ### Routing behavior
 
-- Parameters occupy an entire segment: `/people/{id}`. Read them with
-  `r.Context().Value("id").(string)`; they are also available inside middleware.
-- Matching is case-sensitive. Trailing slashes are significant; `/people` and
-  `/people/` are different routes. Query strings do not participate in matching.
+- Parameters occupy an entire segment: `/people/{id}`. Prefer `jano.Param(r, "id")`
+  or `r.PathValue("id")`; legacy `r.Context().Value("id")` also works.
+- A final `{path...}` captures the remaining path: `/files/{path...}` matches
+  `/files/a/b` and `/files/`, but not `/files` without the separator.
+- Matching uses the decoded `URL.Path`, is case-sensitive and preserves trailing
+  slashes. Query strings do not participate in matching.
+- Static segments take precedence over parameters, which take precedence over
+  catch-alls. If a more specific branch fails, lookup tries the next matching
+  branch. Registration order does not affect precedence.
 - Registering the same method and path again replaces the previous handler.
-- An unregistered method returns the fallback response (404 by default).
-  `HEAD` and `OPTIONS` must be registered explicitly; there is no automatic 405.
-- Middleware runs only for matched routes. The first registered middleware is
-  the outermost wrapper; unmatched requests go directly to `NotFound`.
-- Wildcards and regular-expression constraints are not supported. For example,
-  `{id:[0-9]+}` is treated as a literal parameter name, without validation.
-- Avoid overlapping patterns such as `/people/new` and `/people/{id}` for the
-  same method. Route lookup uses a map, so precedence is unspecified.
-- Configure routes, middleware and the fallback **before** serving requests.
-  Concurrent configuration is unsupported. Handlers and middleware must protect
-  any shared mutable state used by concurrent requests.
+  Structurally identical patterns with different parameter names for the same
+  method are rejected, as are empty/repeated parameter names and malformed paths.
+  `Handle` and method helpers panic on invalid configuration; `Register` returns
+  an error. Regular-expression constraints are not supported.
+- `HEAD` and `OPTIONS` must be registered explicitly. Unregistered methods use
+  the fallback by default; `WithMethodNotAllowed()` enables 405 with a sorted
+  `Allow` header when another method matches the requested path.
+- Middleware order is global → parent group → child group → route → handler.
+  Group middleware is captured at registration; group `Use` affects future routes.
+  Global `Use` applies to all registered routes after recompilation.
+- Global middleware runs only for matched routes. To apply recovery, tracing or
+  authentication to all requests, including 404/405, wrap the complete app as a
+  standard HTTP handler.
+- Configuration changes are synchronized. Each request uses an immutable snapshot;
+  a request already in progress may finish with the previous configuration.
+  Prefer configuring before startup to avoid recompilation. Middleware factories
+  must be side-effect free; handlers and services must protect shared mutable state.
+- Context response tracking supports streaming/connection operations through
+  `http.ResponseController`. Hijacking is tracked; unsupported writers return `http.ErrNotSupported`.
+  Optional legacy writer interfaces are not all exposed
+  by wrappers; use standard handlers when an integration requires those assertions.
+
+## Optional middleware
+
+The `github.com/Hangell/jano/middleware` package provides:
+
+| Middleware | Behavior |
+| --- | --- |
+| `Recovery(report)` | Recover panics with generic 500 responses; report them through an optional callback. |
+| `RequestID` | Generate a request ID in the response header and request context. |
+| `BodyLimit(bytes)` | Bound request bodies; handlers must handle streamed read errors. |
+| `ContextTimeout(duration)` | Set a deadline for context-aware operations; it does not force-stop handlers. |
+
+```go
+app.Use(middleware.Recovery(nil))
+app.Use(middleware.RequestID)
+app.Use(middleware.ContextTimeout(2 * time.Second))
+```
+
+Middleware remains ordinary `func(http.Handler) http.Handler`, so third-party
+middleware and handlers can be composed with Jano. See
+[architecture and integration](docs/architecture.md) for contracts and examples.
+
+## Database and service integration
+
+Inject application-owned repositories into handlers. Jano does not open database
+connections or impose an ORM. Pass `c.Context()` to repository operations so
+request cancellation and deadlines reach context-aware drivers.
+
+The [service example](examples/service) includes a repository interface, an
+in-memory implementation, a PostgreSQL `database/sql` adapter, error mapping,
+request IDs, deadlines and graceful HTTP shutdown:
+
+```sh
+go run ./examples/service
+curl http://localhost:9001/api/v1/users/1
+```
+
+It runs with in-memory data. To use the SQL adapter, register a PostgreSQL driver,
+open a database in your application, create `users(id, name)`, and inject
+`SQLUsers{DB: db}`. Jano has no runtime dependency on that driver. The same
+repository contract can be implemented using sqlx, GORM, Redis or another service.
+SQL tests use a local test driver; they do not connect to a real database.
 
 ## Runnable CRUD example
 
@@ -108,8 +204,9 @@ make fuzz        # fuzz route matching for 10 seconds
 ```
 
 `make` is optional: equivalent Go commands are in
-[CONTRIBUTING.md](CONTRIBUTING.md). Benchmarks depend on the Go version, hardware
-and workload; run them locally instead of relying on historical timing claims.
+[CONTRIBUTING.md](CONTRIBUTING.md). See the [benchmark methodology](docs/benchmarks.md).
+Benchmarks depend on Go version, hardware and workload; they do not establish
+feature or performance parity with other frameworks.
 
 ## Contributing
 

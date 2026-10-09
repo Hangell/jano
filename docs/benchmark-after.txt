@@ -1,0 +1,27 @@
+goos: linux
+goarch: amd64
+pkg: github.com/Hangell/jano
+cpu: Intel(R) Core(TM) i7-10510U CPU @ 1.80GHz
+BenchmarkJanoSimple-8   	 2600554	        81.43 ns/op	       0 B/op	       0 allocs/op
+BenchmarkJanoSimple-8   	 2808057	        77.73 ns/op	       0 B/op	       0 allocs/op
+BenchmarkJanoSimple-8   	 3125186	        93.35 ns/op	       0 B/op	       0 allocs/op
+BenchmarkRouteCount/static/10-8         	 2634915	        94.40 ns/op	       0 B/op	       0 allocs/op
+BenchmarkRouteCount/static/10-8         	 2391247	        99.31 ns/op	       0 B/op	       0 allocs/op
+BenchmarkRouteCount/static/10-8         	 2428758	        92.38 ns/op	       0 B/op	       0 allocs/op
+BenchmarkRouteCount/parameter/10-8      	  111632	      2805 ns/op	     992 B/op	       8 allocs/op
+BenchmarkRouteCount/parameter/10-8      	  105712	      2160 ns/op	     992 B/op	       8 allocs/op
+BenchmarkRouteCount/parameter/10-8      	   91915	      2521 ns/op	     992 B/op	       8 allocs/op
+BenchmarkRouteCount/static/100-8        	 2845995	        88.44 ns/op	       0 B/op	       0 allocs/op
+BenchmarkRouteCount/static/100-8        	 3274339	        75.53 ns/op	       0 B/op	       0 allocs/op
+BenchmarkRouteCount/static/100-8        	 3375068	        63.64 ns/op	       0 B/op	       0 allocs/op
+BenchmarkRouteCount/parameter/100-8     	  155239	      1374 ns/op	     992 B/op	       8 allocs/op
+BenchmarkRouteCount/parameter/100-8     	  216045	      1123 ns/op	     992 B/op	       8 allocs/op
+BenchmarkRouteCount/parameter/100-8     	  185290	      1389 ns/op	     992 B/op	       8 allocs/op
+BenchmarkRouteCount/static/1000-8       	 3391732	        75.05 ns/op	       0 B/op	       0 allocs/op
+BenchmarkRouteCount/static/1000-8       	 3698314	        64.95 ns/op	       0 B/op	       0 allocs/op
+BenchmarkRouteCount/static/1000-8       	 3860916	        69.32 ns/op	       0 B/op	       0 allocs/op
+BenchmarkRouteCount/parameter/1000-8    	  178434	      1574 ns/op	     992 B/op	       8 allocs/op
+BenchmarkRouteCount/parameter/1000-8    	  208555	      1652 ns/op	     992 B/op	       8 allocs/op
+BenchmarkRouteCount/parameter/1000-8    	  132781	      1546 ns/op	     992 B/op	       8 allocs/op
+PASS
+ok  	github.com/Hangell/jano	6.597s
